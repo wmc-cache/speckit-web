@@ -1,3 +1,4 @@
+import { normalize } from '../../../src/core/search.ts';
 import { useEffect, useRef, useState } from 'react';
 import type { DocumentData } from '../../../src/core/model.ts';
 import { Outline } from '../components/Outline.tsx';
@@ -19,7 +20,7 @@ interface Props {
 
 export function DocView({ docId, anchor, highlight }: Props) {
   const { t, lang } = useI18n();
-  const { source, lastChange } = useData();
+  const { source, lastChange, projectVersion } = useData();
   const [doc, setDoc] = useState<DocumentData | null>(null);
   const [extraHtml, setExtraHtml] = useState<string[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'deleted'>('loading');
@@ -32,15 +33,17 @@ export function DocView({ docId, anchor, highlight }: Props) {
       .getDoc(docId)
       .then((d) => {
         if (cancelled) return;
-        setDoc(d);
+        if (d) setDoc(d);
         setExtraHtml([]);
-        setState(d ? 'ready' : 'missing');
+        setState((previous) =>
+          d ? 'ready' : previous === 'loading' || previous === 'missing' ? 'missing' : 'deleted',
+        );
       })
       .catch(() => !cancelled && setState('missing'));
     return () => {
       cancelled = true;
     };
-  }, [source, docId, reload]);
+  }, [source, docId, reload, projectVersion]);
 
   // Live updates: refetch when this document changes, warn when it is deleted.
   useEffect(() => {
@@ -49,6 +52,20 @@ export function DocView({ docId, anchor, highlight }: Props) {
     else if (lastChange.type === 'document') setReload((r) => r + 1);
   }, [lastChange, docId]);
 
+  useEffect(() => {
+    const targetPart = anchor && doc ? (doc.anchorParts?.[anchor] ?? 0) : 0;
+    if (!doc || targetPart <= extraHtml.length) return;
+    let cancelled = false;
+    void Promise.all(Array.from({ length: targetPart }, (_, i) => source.getDoc(docId, i + 1))).then(
+      (parts) => {
+        if (!cancelled) setExtraHtml(parts.filter((p) => p !== null).map((p) => p!.html));
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [source, docId, doc, anchor, extraHtml.length]);
+
   // After the HTML is in the DOM: tooltips, mermaid, search highlight, scroll to the anchor.
   useEffect(() => {
     const el = bodyRef.current;
@@ -56,8 +73,20 @@ export function DocView({ docId, anchor, highlight }: Props) {
     for (const span of el.querySelectorAll<HTMLElement>('[data-unpublished]'))
       span.title = t('doc.unpublished');
     void renderMermaid(el, currentTheme());
-    const hit = highlight ? highlightText(el, highlight) : null;
-    const target = anchor ? document.getElementById(anchor) : hit;
+    const hit = highlightText(el, highlight ?? '');
+    const target = hit ?? (anchor ? document.getElementById(anchor) : null);
+    if (highlight && !hit && doc && 1 + extraHtml.length < doc.parts) {
+      const loadedText = normalize(el.textContent ?? '');
+      if (!loadedText.includes(normalize(highlight.trim()))) {
+        let cancelled = false;
+        void source.getDoc(docId, 1 + extraHtml.length).then((next) => {
+          if (!cancelled && next) setExtraHtml((parts) => [...parts, next.html]);
+        });
+        return () => {
+          cancelled = true;
+        };
+      }
+    }
     if (target) {
       target.scrollIntoView({ block: 'start' });
       if (anchor) {
@@ -68,7 +97,7 @@ export function DocView({ docId, anchor, highlight }: Props) {
     } else if (!anchor) {
       window.scrollTo({ top: 0 });
     }
-  }, [doc, extraHtml, state, anchor, highlight, t]);
+  }, [doc, extraHtml, state, anchor, highlight, t, source, docId]);
 
   // Re-render diagrams when the theme changes.
   useEffect(() => {

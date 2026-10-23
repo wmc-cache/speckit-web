@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import { safeFile, safeRead } from './safe-read.ts';
 import path from 'node:path';
 import type {
   ChangeEvent,
@@ -24,7 +24,7 @@ import { parseChecklist } from './parse/checklists.ts';
 import { parseConstitution } from './parse/constitution.ts';
 import { analyzeSpec } from './parse/spec-summary.ts';
 import { parseTasks } from './parse/tasks.ts';
-import { asMarkdownSource, renderMarkdown, splitParts } from './render/index.ts';
+import { asMarkdownSource, renderMarkdown } from './render/index.ts';
 import { docHref } from './render/links.ts';
 import { rehypeClarificationMarks } from './render/speckit-marks.ts';
 import { rehypeXref } from './render/xref.ts';
@@ -111,6 +111,8 @@ export class ProjectStore {
       this.texts.delete(id);
       for (const key of this.rendered.keys()) if (key.startsWith(`${id}:`)) this.rendered.delete(key);
     }
+    this.rendered.clear();
+    this.analyses.clear();
     this.build();
     const at = new Date().toISOString();
     const events: ChangeEvent[] = [];
@@ -123,7 +125,7 @@ export class ProjectStore {
       this.generatedAt = at;
       events.push({ type: 'project', docIds: [...added, ...removed, ...changed], at });
     }
-    if (changed.length) events.push({ type: 'document', docIds: changed, at });
+    if (projectChanged) events.push({ type: 'document', docIds: [...after.keys()], at });
     if (removed.length) events.push({ type: 'removed', docIds: removed, at });
     return events;
   }
@@ -147,10 +149,12 @@ export class ProjectStore {
   readText(docId: string): string | null {
     const e = this.scan.docs.get(docId);
     if (!e) return null;
+    if (!safeFile(this.root, e.path)) return null;
     const cached = this.texts.get(docId);
     if (cached && cached.mtimeMs === e.mtimeMs && cached.size === e.size) return cached.text;
     try {
-      const text = fs.readFileSync(e.absPath, 'utf8');
+      const text = safeRead(this.root, e.path);
+      if (text === null) return null;
       this.texts.set(docId, { mtimeMs: e.mtimeMs, size: e.size, text });
       return text;
     } catch {
@@ -231,6 +235,7 @@ export class ProjectStore {
   private analyze<T>(docId: string, kind: string, fn: (text: string) => T): T | null {
     const e = this.scan.docs.get(docId);
     if (!e) return null;
+    if (!safeFile(this.root, e.path)) return null;
     const key = `${docId}:${kind}`;
     const hit = this.analyses.get(key);
     if (hit && hit.mtimeMs === e.mtimeMs) return hit.value as T;
@@ -389,35 +394,39 @@ export class ProjectStore {
   async getDoc(docId: string, part = 0): Promise<DocumentData | null> {
     const e = this.scan.docs.get(docId);
     if (!e) return null;
+    if (!safeFile(this.root, e.path)) return null;
     const key = `${docId}:${part}`;
     const cached = this.rendered.get(key);
     if (cached && cached.mtimeMs === e.mtimeMs) return cached.data;
     const text = this.readText(docId);
     if (text === null) return null;
-    const parts = splitParts(text);
-    if (part < 0 || part >= parts.length) return null;
+    if (part < 0 || !Number.isInteger(part)) return null;
     const marks: DocumentData['clarificationMarks'] = [];
-    const result = await renderMarkdown(asMarkdownSource(parts[part], e.path, e.format), {
+    const result = await renderMarkdown(asMarkdownSource(text, e.path, e.format), {
       docPath: e.path,
       docId: e.id,
       resolveDoc: (p) => this.resolvePath(p),
       plugins: [rehypeClarificationMarks(marks), rehypeXref(this.xrefResolver(e))],
     });
-    const data: DocumentData = {
-      ...this.docRef(e),
-      featureId: e.featureId,
-      format: e.format,
-      html: result.html,
-      outline: result.outline,
-      anchors: result.anchors,
-      clarificationMarks: marks,
-      size: e.size,
-      truncated: parts.length > 1,
-      parts: parts.length,
-      part,
-    };
-    this.rendered.set(key, { mtimeMs: e.mtimeMs, data });
-    return data;
+    const parts = result.htmlParts;
+    for (let i = 0; i < parts.length; i++) {
+      const data: DocumentData = {
+        ...this.docRef(e),
+        featureId: e.featureId,
+        format: e.format,
+        html: parts[i],
+        anchorParts: result.anchorParts,
+        outline: result.outline,
+        anchors: result.anchors,
+        clarificationMarks: marks,
+        size: e.size,
+        truncated: parts.length > 1,
+        parts: parts.length,
+        part: i,
+      };
+      this.rendered.set(`${docId}:${i}`, { mtimeMs: e.mtimeMs, data });
+    }
+    return this.rendered.get(key)?.data ?? null;
   }
 }
 

@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { ProjectStore } from '../../src/core/project.ts';
@@ -76,4 +77,24 @@ describe('large documents', () => {
   it('returns null for unknown document ids', async () => {
     expect(await new ProjectStore(path.join(FIXTURES, 'basic')).getDoc('nope')).toBeNull();
   });
+});
+
+it('keeps global anchors and complete fenced blocks across large document parts', async () => {
+  const root = copyFixture('basic');
+  const file = path.join(root, 'specs/001-alpha/big.md');
+  fs.writeFileSync(
+    file,
+    '## Repeat\n\n[NEEDS CLARIFICATION: first]\n\n' +
+      ('padding '.repeat(100) + '\n\n').repeat(1400) +
+      '## Repeat\n\n[NEEDS CLARIFICATION: second]\n\n```text\n## not a heading\n```\n',
+  );
+  const store = new ProjectStore(root);
+  const id = docIdFor('specs/001-alpha/big.md');
+  const first = (await store.getDoc(id))!;
+  expect(first.anchorParts['repeat-1']).toBeGreaterThan(0);
+  expect(first.clarificationMarks.map((m) => m.anchor)).toEqual(['nc-1', 'nc-2']);
+  const later = (await store.getDoc(id, first.anchorParts['repeat-1']))!;
+  expect(later.html).toContain('id="repeat-1"');
+  expect(first.outline.map((h) => h.text)).toEqual(['Repeat', 'Repeat']);
+  expect(later.html).toContain('## not a heading');
 });

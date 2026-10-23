@@ -1,3 +1,4 @@
+import { assertTarget, targetFingerprint } from './target.ts';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -25,6 +26,8 @@ export interface PlanEntry {
   stagedRoot: string;
   targetPath: string;
   expiresAt: number;
+  baseRoot: string;
+  fingerprint: string;
 }
 
 export function resolveTarget(options: InitOptions, baseDir: string): string {
@@ -43,6 +46,7 @@ function listFiles(root: string): string[] {
     for (const name of fs.readdirSync(dir).sort()) {
       const abs = path.join(dir, name);
       const r = rel ? `${rel}/${name}` : name;
+      if (fs.lstatSync(abs).isSymbolicLink()) throw new Error('init.error.targetUnsafe');
       if (fs.statSync(abs).isDirectory()) walk(abs, r);
       else out.push(r);
     }
@@ -72,63 +76,88 @@ export async function createPlan(
   baseDir: string,
   runner: Runner,
   env: NodeJS.ProcessEnv = process.env,
+  signal?: AbortSignal,
 ): Promise<{ plan: InitPlan; entry: PlanEntry }> {
-  const targetPath = resolveTarget(options, baseDir);
+  const baseRoot = fs.realpathSync(baseDir);
+  const targetPath = resolveTarget(options, baseRoot);
+  try {
+    assertTarget(baseRoot, targetPath);
+  } catch {
+    throw new InitError('INVALID_OPTIONS', 'init.error.targetUnsafe');
+  }
+  const fingerprint = targetFingerprint(baseRoot, targetPath);
   if (fs.existsSync(targetPath) && !fs.statSync(targetPath).isDirectory())
-    throw new InitError('INVALID_OPTIONS', `${targetPath} exists and is not a directory`);
+    throw new InitError('INVALID_OPTIONS', 'init.error.targetFile');
 
   const staging = fs.mkdtempSync(path.join(os.tmpdir(), 'speckit-web-init-'));
-  const stagedRoot = path.join(staging, path.basename(targetPath) || 'project');
-  const result = await runSpecify(
-    runner,
-    [
-      'init',
-      stagedRoot,
-      '--integration',
-      options.integration,
-      '--script',
-      options.script,
-      '--ignore-agent-tools',
-    ],
-    { env, cwd: staging },
-  );
-  if (result.code !== 0 || !fs.existsSync(path.join(stagedRoot, '.specify'))) {
+  try {
+    const stagedRoot = path.join(staging, path.basename(targetPath) || 'project');
+    const result = await runSpecify(
+      runner,
+      [
+        'init',
+        stagedRoot,
+        '--integration',
+        options.integration,
+        '--script',
+        options.script,
+        '--ignore-agent-tools',
+      ],
+      { env, cwd: staging, signal },
+    );
+    if (result.code !== 0 || !fs.existsSync(path.join(stagedRoot, '.specify'))) {
+      fs.rmSync(staging, { recursive: true, force: true });
+      throw new InitError('SPECIFY_FAILED', `specify exited with code ${result.code}`, tail(result.output));
+    }
+
+    // The official CLI has no numbering flag; init-options.json is the file it reads.
+    if (options.featureNumbering === 'timestamp') {
+      const file = path.join(stagedRoot, '.specify', 'init-options.json');
+      const json = fs.existsSync(file)
+        ? (JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, unknown>)
+        : {};
+      json.feature_numbering = 'timestamp';
+      fs.writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
+    }
+
+    const targetState = targetStateOf(targetPath);
+    const files = listFiles(stagedRoot).map((rel) => {
+      const dest = path.join(targetPath, rel);
+      assertTarget(baseRoot, dest);
+      const action = !fs.existsSync(dest)
+        ? 'create'
+        : sameContent(path.join(stagedRoot, rel), dest)
+          ? 'unchanged'
+          : 'overwrite';
+      return { path: rel, action } as InitPlan['files'][number];
+    });
+    const plan: InitPlan = {
+      planId: crypto.randomBytes(12).toString('hex'),
+      runner: { kind: runner.kind, version: runner.version },
+      targetPath,
+      targetState,
+      files,
+      requiresConfirmation: targetState !== 'empty' || files.some((f) => f.action === 'overwrite'),
+    };
+    return {
+      plan,
+      entry: {
+        plan,
+        options,
+        staging,
+        stagedRoot,
+        targetPath,
+        baseRoot,
+        fingerprint,
+        expiresAt: Date.now() + PLAN_TTL_MS,
+      },
+    };
+  } catch (error) {
     fs.rmSync(staging, { recursive: true, force: true });
-    throw new InitError('SPECIFY_FAILED', `specify exited with code ${result.code}`, tail(result.output));
+    if (error instanceof Error && error.message === 'init.error.targetUnsafe')
+      throw new InitError('INVALID_OPTIONS', error.message);
+    throw error;
   }
-
-  // The official CLI has no numbering flag; init-options.json is the file it reads.
-  if (options.featureNumbering === 'timestamp') {
-    const file = path.join(stagedRoot, '.specify', 'init-options.json');
-    const json = fs.existsSync(file)
-      ? (JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, unknown>)
-      : {};
-    json.feature_numbering = 'timestamp';
-    fs.writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
-  }
-
-  const targetState = targetStateOf(targetPath);
-  const files = listFiles(stagedRoot).map((rel) => {
-    const dest = path.join(targetPath, rel);
-    const action = !fs.existsSync(dest)
-      ? 'create'
-      : sameContent(path.join(stagedRoot, rel), dest)
-        ? 'unchanged'
-        : 'overwrite';
-    return { path: rel, action } as InitPlan['files'][number];
-  });
-  const plan: InitPlan = {
-    planId: crypto.randomBytes(12).toString('hex'),
-    runner: { kind: runner.kind, version: runner.version },
-    targetPath,
-    targetState,
-    files,
-    requiresConfirmation: targetState !== 'empty' || files.some((f) => f.action === 'overwrite'),
-  };
-  return {
-    plan,
-    entry: { plan, options, staging, stagedRoot, targetPath, expiresAt: Date.now() + PLAN_TTL_MS },
-  };
 }
 
 export function discardPlan(entry: PlanEntry): void {

@@ -51,7 +51,7 @@ export function mountInitRoutes(app: Hono, opts: InitRouteOptions): void {
     try {
       const { plan, entry } = await createPlan(valid.options, startRoot, runner);
       plans.add(entry);
-      return c.json({ ...plan, targetPath: path.relative(startRoot, plan.targetPath) || '.' });
+      return c.json({ ...plan, targetPath: path.relative(entry.baseRoot, plan.targetPath) || '.' });
     } catch (err) {
       if (err instanceof InitError && err.code === 'SPECIFY_FAILED')
         return apiError(c, 500, 'SPECIFY_FAILED', { log: err.log ?? '' });
@@ -71,21 +71,23 @@ export function mountInitRoutes(app: Hono, opts: InitRouteOptions): void {
     try {
       await applyPlan(entry);
     } catch (err) {
+      if (err instanceof InitApplyError && err.message === 'init.error.planChanged')
+        return apiError(c, 410, 'PLAN_EXPIRED');
       if (err instanceof InitApplyError)
         return apiError(c, 500, 'APPLY_FAILED', { rolledBack: err.rolledBack, leftovers: err.leftovers });
       throw err;
     }
     const isNew = entry.options.target.kind === 'new';
     if (isNew) {
-      store.setRoot(entry.targetPath);
-      opts.onRootChange?.(entry.targetPath);
+      store.setRoot(path.resolve(startRoot, path.relative(entry.baseRoot, entry.targetPath)));
+      opts.onRootChange?.(store.root);
     } else {
       store.load();
     }
     events.emit({ type: 'project', docIds: [], at: new Date().toISOString() });
     return c.json({
       status: 'succeeded',
-      projectRoot: path.relative(startRoot, entry.targetPath) || '.',
+      projectRoot: path.relative(entry.baseRoot, entry.targetPath) || '.',
       nextSteps: nextSteps(null),
     });
   });

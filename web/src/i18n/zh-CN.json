@@ -134,5 +134,17 @@
   "init.target.state.non_empty": "目录不是空的",
   "init.target.state.speckit_project": "已是 Spec Kit 项目",
   "init.runnerVersion": "specify {version}",
-  "init.cliRequired": "需要 CLI"
+  "init.cliRequired": "需要 CLI",
+  "init.error.nameRequired": "请输入目录名称。",
+  "init.error.nameDot": "目录名称不能为 . 或 ..。",
+  "init.error.nameSeparator": "请输入不含路径分隔符的子目录名称。",
+  "init.error.nameInvalid": "目录名称包含无效字符。",
+  "init.error.targetInvalid": "请选择当前目录或新子目录。",
+  "init.error.integrationRequired": "请输入助手标识。",
+  "init.error.integrationInvalid": "助手标识包含无效字符。",
+  "init.error.scriptInvalid": "请选择 sh、PowerShell 或 Python。",
+  "init.error.numberingInvalid": "请选择顺序编号或时间戳编号。",
+  "init.error.targetUnsafe": "目标路径超出允许目录或包含符号链接。",
+  "init.error.targetFile": "目标已存在且为文件。",
+  "init.error.planChanged": "目标在预览后发生变化，请重新生成预览后应用。"
 }

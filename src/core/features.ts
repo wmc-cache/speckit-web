@@ -1,5 +1,4 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import { safeRead } from './safe-read.ts';
 import type { ArtifactKind, ArtifactSlot, DocumentRef, NumberingKind, ScriptKind } from './model.ts';
 import { ARTIFACT_KINDS } from './model.ts';
 
@@ -89,9 +88,9 @@ export function buildArtifactSlots(
   return { artifacts, extraDocs };
 }
 
-function readJson(file: string): Record<string, unknown> | null {
+function readJson(root: string, rel: string): Record<string, unknown> | null {
   try {
-    return JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, unknown>;
+    return JSON.parse(safeRead(root, rel, true) ?? 'null') as Record<string, unknown>;
   } catch {
     return null;
   }
@@ -105,7 +104,7 @@ export interface InitOptionsInfo {
 }
 
 export function readInitOptions(root: string): InitOptionsInfo {
-  const j = readJson(path.join(root, '.specify', 'init-options.json')) ?? {};
+  const j = readJson(root, '.specify/init-options.json') ?? {};
   const str = (v: unknown) => (typeof v === 'string' && v ? v : null);
   const numbering = str(j.feature_numbering) ?? str(j.branch_numbering);
   const script = str(j.script);
@@ -118,7 +117,7 @@ export function readInitOptions(root: string): InitOptionsInfo {
 }
 
 export function readCurrentFeatureId(root: string, featureIds: string[]): string | null {
-  const j = readJson(path.join(root, '.specify', 'feature.json'));
+  const j = readJson(root, '.specify/feature.json');
   const dir = j && typeof j.feature_directory === 'string' ? j.feature_directory : null;
   if (!dir) return null;
   const name = dir.replace(/\\/g, '/').replace(/\/+$/, '').split('/').pop() ?? '';

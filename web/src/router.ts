@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useHashLocation } from 'wouter/use-hash-location';
 
 export interface Route {
   /** Path inside the hash, e.g. `/d/abc123`. */
@@ -16,7 +16,13 @@ export function parseHash(hash: string): Route {
     segments: path
       .split('/')
       .filter(Boolean)
-      .map((s) => decodeURIComponent(s)),
+      .map((s) => {
+        try {
+          return decodeURIComponent(s);
+        } catch {
+          return s;
+        }
+      }),
     query: new URLSearchParams(q),
   };
 }
@@ -40,13 +46,8 @@ export function navigate(
 }
 
 export function useRoute(): Route {
-  const [route, setRoute] = useState(() => parseHash(location.hash));
-  useEffect(() => {
-    const on = () => setRoute(parseHash(location.hash));
-    window.addEventListener('hashchange', on);
-    return () => window.removeEventListener('hashchange', on);
-  }, []);
-  return route;
+  const [hash] = useHashLocation();
+  return parseHash(hash);
 }
 
 export const featureHref = (id: string) => href(`/f/${encodeURIComponent(id)}`);

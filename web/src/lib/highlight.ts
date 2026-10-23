@@ -1,6 +1,10 @@
+import { normalize } from '../../../src/core/search.ts';
 /** Wraps case-insensitive occurrences of `query` in text nodes with <mark class="search-highlight">. */
 export function highlightText(root: HTMLElement, query: string): HTMLElement | null {
-  const q = query.trim().toLowerCase();
+  for (const mark of root.querySelectorAll('mark.search-highlight'))
+    mark.replaceWith(document.createTextNode(mark.textContent ?? ''));
+  root.normalize();
+  const q = normalize(query.trim());
   if (!q) return null;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode: (n) =>
@@ -13,7 +17,7 @@ export function highlightText(root: HTMLElement, query: string): HTMLElement | n
   let first: HTMLElement | null = null;
   for (const node of nodes) {
     const text = node.nodeValue ?? '';
-    const lower = text.toLowerCase();
+    const lower = normalize(text);
     let idx = lower.indexOf(q);
     if (idx < 0) continue;
     const frag = document.createDocumentFragment();

@@ -79,7 +79,9 @@
 | `outline` | Heading[] | `{ depth, text, anchor }`，用于目录大纲（FR-005） |
 | `anchors` | Record<string, string> | 编号 → 锚点，如 `FR-003 → fr-003`，用于交叉跳转（FR-019） |
 | `clarificationMarks` | `{ anchor, text }[]` | 每处待澄清标记的位置（FR-015） |
-| `size` | number | 字节数；> 1 MB 时 `truncatedPreview` 为 true 并分段加载 |
+| `size` | number | 源文件字节数 |
+| `truncated` / `parts` / `part` | boolean / number / number | 整篇解析后的 HTML 按完整块分段，目标约 1 MB，单个块可超限；part 从 0 开始 |
+| `anchorParts` | Record<string, number> | 全局锚点到分段编号的映射；每段保留整篇目录和编号索引 |
 | `updatedAt` | ISO 时间 | |
 
 `DocumentRef` = `{ id, path, title, kind, updatedAt }`。

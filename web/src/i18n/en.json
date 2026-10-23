@@ -134,5 +134,17 @@
   "init.target.state.non_empty": "Directory is not empty",
   "init.target.state.speckit_project": "Already a Spec Kit project",
   "init.runnerVersion": "specify {version}",
-  "init.cliRequired": "needs CLI"
+  "init.cliRequired": "needs CLI",
+  "init.error.nameRequired": "Enter a directory name.",
+  "init.error.nameDot": "The name cannot be . or ...",
+  "init.error.nameSeparator": "Use a child directory name without path separators.",
+  "init.error.nameInvalid": "The directory name contains invalid characters.",
+  "init.error.targetInvalid": "Choose the current directory or a new child directory.",
+  "init.error.integrationRequired": "Enter an assistant key.",
+  "init.error.integrationInvalid": "The assistant key contains invalid characters.",
+  "init.error.scriptInvalid": "Choose sh, PowerShell or Python.",
+  "init.error.numberingInvalid": "Choose sequential or timestamp numbering.",
+  "init.error.targetUnsafe": "The target path is outside the allowed directory or contains a symbolic link.",
+  "init.error.targetFile": "The target already exists as a file.",
+  "init.error.planChanged": "The target changed after preview. Generate a new preview before applying."
 }

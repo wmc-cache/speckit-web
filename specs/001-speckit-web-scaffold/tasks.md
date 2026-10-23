@@ -347,3 +347,29 @@ Task: "创建 tests/fixtures/bin/specify 假可执行文件"
 - 每完成一个任务或一组相关任务就提交一次
 - 可在任何 Checkpoint 停下独立验证
 - 避免：含糊的任务、同一文件冲突、破坏故事独立性的跨故事依赖
+
+
+## Phase 9: Convergence
+
+**Assessment date**: 2026-10-23
+
+**Scope**: FR-001～FR-032、17 个用户故事验收场景、SC-002/003/004/006/007/008/010、T001～T102；计划约束按技术栈、目录架构、共享模型、只读浏览、路径安全、渲染净化、本地服务与监听、静态发布、初始化事务、双语主题、包体积、测试与交付 12 组核查。准则仍是未填写模板，跳过准则门禁。SC-001/005 的实际使用与发布耗时、SC-009 的用户研究结果不作为已验证结论。
+
+**Validation**: 本轮 `pnpm typecheck` 通过；`pnpm test` 101/101 通过（首次沙箱禁止监听 127.0.0.1，允许回环监听后重跑通过）；`pnpm test:perf` 3/3 通过。临时夹具复现了敏感文件别名被登记、外部元数据被读取、带空格的 `..` 被接受、过期预览覆盖新文件、部分复制残留却报告回滚成功、链接目标新增后渲染缓存未更新、跨段重复标题锚点冲突。本轮未执行浏览器端到端、真实官方初始化、远端发布或跨平台验证；现有测试通过不代表以下缺口已解决。
+
+**Findings**: 12 项（HIGH 6 / MEDIUM 6；contradicts 3 / partial 6 / missing 2 / unrequested 1）。以下按严重度排序，F 编号对应本轮发现；原有任务状态不变。
+
+- [X] T103 [US1] HIGH F1：在 `src/core/scan.ts`、`src/core/features.ts`、`src/core/project.ts` 统一真实路径与读取白名单校验：拒绝 `specs/**/leak.md` 指向项目内 `.env`、`.git/` 或非文档源码的别名，拒绝 `.specify/init-options.json`、`feature.json` 指向项目外的链接，并在实际读取时防止扫描后路径被替换而绕过边界；补充 `tests/integration/security.test.ts` 与 `tests/integration/build.test.ts`，确认接口、搜索及静态导出均不泄露合成敏感内容 per FR-008、FR-010、SC-010、T009、T010、T028 (contradicts)
+- [X] T104 [US3] HIGH F2：在 `src/init/options.ts` 中先规范化名称再校验，拒绝 `" .. "`、`" . "` 等裁剪后非法目标；在 `src/init/plan.ts`、`src/init/apply.ts` 中按真实路径限制网页初始化到启动目录或其合法子目录，并检查目标及写入路径各级符号链接；补充 `tests/integration/init.test.ts`、`tests/integration/init-api.test.ts` 验证目录逃逸与链接越界在预览和应用阶段均被拒绝，外部夹具保持不变 per FR-020、FR-023、T069、T073 (contradicts)
+- [X] T105 [US3] HIGH F3：在 `src/init/plan.ts` 保存目标文件状态并在 `src/init/apply.ts`、`src/server/init-routes.ts` 应用前重新核对；预览后新增、修改、删除或类型变化的目标必须使计划失效或重新生成预览并确认，不能继续依据旧的 create/overwrite/unchanged 分类写入；补充 CLI/API 测试，确认预览后出现的用户文件不会被静默覆盖或被失败回滚删除 per FR-023、US3/AC2、T070～T073 (contradicts)
+- [X] T106 [US3] HIGH F4：修复 `src/init/apply.ts` 仅在 copy 成功后登记 createdFiles 的回滚漏洞，在复制开始前记录可能写入的目标；复制部分内容后抛错也必须清理或如实返回 leftovers；备份恢复失败时保留可恢复备份并报告位置，不能在 finally 中无条件销毁唯一备份；在 `tests/integration/init.test.ts` 覆盖部分复制、恢复失败和目录清理失败，确保 rolledBack 与真实文件状态一致 per FR-026、T063、T071 (partial)
+- [X] T107 [US3] HIGH F5：为 `src/init/plan.ts`、`src/init/runner.ts`、`src/cli/init.ts` 建立暂存资源的统一异常与取消清理路径，覆盖编号 JSON 解析/比对异常、覆盖确认时 Ctrl+C，以及官方子进程运行期间取消；取消时终止相关子进程、清理暂存或明确报告残留，CLI 返回 130；在 `tests/integration/init.test.ts` 补充当前缺失的取消与暂存后异常用例 per FR-026、T063、T070、T072 (partial)
+- [X] T108 [US1] HIGH F6：修复 `src/core/project.ts` 对相对链接和编号定义依赖的缓存失效：目标文档/定义新增、删除或改变时，重新渲染引用它们的文档；使 `web/src/hooks/useLiveData.ts`、`web/src/routes/DocView.tsx` 在依赖变化、文档重建及 SSE 重连后重取当前正文；补充集成与 `tests/e2e/browse.spec.ts` 用例，验证新增 plan 后旧 spec 链接由“未发布”变为可跳转、删除定义后旧链接失效、断线期间的正文修改能自动恢复 per FR-006、FR-011、FR-019、SC-004、T015、T034、T037、T083 (partial)
+- [X] T109 [US1] MEDIUM F7：在 `src/core/render/index.ts`、`src/core/project.ts` 为大文档保留整篇 Markdown 结构及全局唯一标题/待澄清锚点，避免按行切段拆断围栏或重置编号；扩展必要的 `src/core/model.ts`、本地/静态数据与 `web/src/routes/DocView.tsx`、`web/src/components/Outline.tsx`，合并后续段目录并在分享链接、搜索或编号引用指向后续段时自动加载目标段；在 `tests/unit/render.test.ts` 与本地/静态 e2e 覆盖跨段重复标题、代码围栏、待澄清标记和深链接 per FR-004、FR-005、FR-015、US1/AC4、spec: 大于 1 MB 文档边界、T013、T039、T041 (partial)
+- [X] T110 [US1] MEDIUM F8：在 `web/src/App.tsx`、`web/src/router.ts` 实现约定的 `#/f/:featureId/:artifact` 路由解析，不能忽略第三段而始终显示特性总览；为单文档产物、目录型产物、缺失产物和未知特性提供一致可读结果，并补充本地/静态模式路由测试 per T021、FR-002、FR-005 (missing)
+- [X] T111 [US3] MEDIUM F9：为 `src/init/options.ts` 的校验错误建立可本地化的稳定错误键/参数，在 `src/cli/init.ts` 与 `web/src/routes/InitWizard.tsx` 按所选语言展示字段错误、初始化失败及确认提示；补齐 `src/i18n/`、`web/src/i18n/` 字典与验证测试，避免中文向导直接展示 name must / integration must 或裸错误码，保留诊断日志的原文 per FR-031、T016、T017、T069、T075、T097 (partial)
+- [X] T112 [US4] MEDIUM F10：让 `web/src/lib/highlight.ts` 与 `src/core/search.ts` 共用全半角/大小写归一化和偏移规则；查询变化或清空时移除旧高亮，避免旧 mark 被跳过后无法更新；在 `tests/e2e/search.spec.ts` 覆盖全角正文用半角查询命中后正文高亮、同一文档连续切换查询的正确定位 per US4/AC1、FR-018、T081、T086 (partial)
+- [X] T113 MEDIUM F11：核实 `package.json` 中 Vite 8 / chokidar 6 及 `web/src/router.ts` 自写路由相对 plan 中 Vite 6 / chokidar 4 / wouter 的偏离；若没有现有规范约束支持该替代则恢复计划选型，若替代为满足兼容性所必需则记录具体理由与验证证据供评审，不能将版本不同直接视为已批准或仅为匹配文档而盲目降级；验证 Node 22/24、hash 路由及静态子路径行为 per plan: Technical Context / Primary Dependencies、T001、T021 (unrequested)
+- [X] T114 [US5] MEDIUM F12：补全 T102 要求的 `specs/001-speckit-web-scaffold/quickstart.md` 场景 1～9 验证结果记录（可保存为同目录 `validation.md`），逐项注明环境、命令、结果与未验证项；修复上述任务后复跑相关回归并执行本地/静态子路径端到端测试，区分假 specify 测试与官方初始化验证、工作流文件存在与实际远端运行，不把当前自动化通过当作完整交付证明 per T102、US5/AC1～AC3、SC-007、SC-008 (missing)
+
+**Execution order**: 先完成 T103～T107 的文件边界及初始化保护，再完成 T108～T113；T114 在修复后汇总验证。完成后重新运行 `/speckit-converge`。

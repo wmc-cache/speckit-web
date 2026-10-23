@@ -45,19 +45,41 @@ export function which(cmd: string, env: NodeJS.ProcessEnv = process.env): string
 export function run(
   command: string,
   args: string[],
-  opts: { env?: NodeJS.ProcessEnv; cwd?: string } = {},
+  opts: { env?: NodeJS.ProcessEnv; cwd?: string; signal?: AbortSignal } = {},
 ): Promise<RunResult> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    if (opts.signal?.aborted) {
+      reject(new Error('INIT_CANCELLED'));
+      return;
+    }
     const child = spawn(command, args, {
       cwd: opts.cwd,
       env: { ...(opts.env ?? process.env), NO_COLOR: '1', TERM: 'dumb', PYTHONIOENCODING: 'utf-8' },
       stdio: ['ignore', 'pipe', 'pipe'],
+      detached: process.platform !== 'win32',
     });
     let output = '';
+    const cancel = () => {
+      if (!child.pid) return;
+      if (process.platform === 'win32') spawn('taskkill', ['/pid', String(child.pid), '/T', '/F']);
+      else {
+        try {
+          process.kill(-child.pid, 'SIGKILL');
+        } catch {
+          child.kill('SIGKILL');
+        }
+      }
+    };
+    opts.signal?.addEventListener('abort', cancel, { once: true });
+
     child.stdout?.on('data', (d: Buffer) => (output += d.toString()));
     child.stderr?.on('data', (d: Buffer) => (output += d.toString()));
     child.on('error', (err) => resolve({ code: 127, output: output + String(err) }));
-    child.on('close', (code) => resolve({ code: code ?? 1, output: output.replace(ANSI_RE, '') }));
+    child.on('close', (code) => {
+      opts.signal?.removeEventListener('abort', cancel);
+      if (opts.signal?.aborted) reject(new Error('INIT_CANCELLED'));
+      else resolve({ code: code ?? 1, output: output.replace(ANSI_RE, '') });
+    });
   });
 }
 
@@ -80,7 +102,7 @@ export async function detectRunner(env: NodeJS.ProcessEnv = process.env): Promis
 export function runSpecify(
   runner: Runner,
   args: string[],
-  opts: { env?: NodeJS.ProcessEnv; cwd?: string } = {},
+  opts: { env?: NodeJS.ProcessEnv; cwd?: string; signal?: AbortSignal } = {},
 ) {
   return run(runner.command, [...runner.prefix, ...args], opts);
 }

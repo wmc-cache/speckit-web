@@ -29,6 +29,8 @@ if (cmd === 'init') {
     console.error('Error: something went wrong inside specify');
     process.exit(1);
   }
+  if (process.env.SPECIFY_FAKE_STAGE_MARKER) fs.writeFileSync(process.env.SPECIFY_FAKE_STAGE_MARKER, target);
+  if (process.env.SPECIFY_FAKE_DELAY) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 30000);
   const integration = opt('--integration') || 'copilot';
   const script = opt('--script') || 'sh';
   const root = path.resolve(target);
@@ -49,6 +51,7 @@ if (cmd === 'init') {
   write('.specify/templates/spec-template.md', '# Feature Specification: [FEATURE NAME]\n');
   write(`.specify/scripts/${script === 'ps' ? 'powershell/common.ps1' : 'bash/common.sh'}`, '# common\n');
   if (integration === 'claude') write('.claude/skills/speckit-specify/SKILL.md', '# speckit-specify\n');
+  if (process.env.SPECIFY_FAKE_BAD_JSON) write('.specify/init-options.json', '{bad');
   console.log(`Project ready: ${root}`);
   process.exit(0);
 }

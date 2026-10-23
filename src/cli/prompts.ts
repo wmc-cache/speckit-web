@@ -1,6 +1,6 @@
 import * as p from '@clack/prompts';
 import type { IntegrationInfo, InitTarget, NumberingKind, ScriptKind } from '../core/model.ts';
-import { t } from '../i18n/index.ts';
+import { t, type MessageKey } from '../i18n/index.ts';
 import { nameError } from '../init/options.ts';
 import { CliError, EXIT } from './exit-codes.ts';
 
@@ -26,7 +26,10 @@ export async function askTarget(): Promise<InitTarget> {
   );
   if (kind === 'here') return { kind: 'here' };
   const name = guard(
-    await p.text({ message: t('init.askName'), validate: (v) => nameError(v) ?? undefined }),
+    await p.text({
+      message: t('init.askName'),
+      validate: (v) => (nameError(v) ? t(nameError(v) as MessageKey) : undefined),
+    }),
   );
   return { kind: 'new', name: name.trim() };
 }

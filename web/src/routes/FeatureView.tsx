@@ -1,3 +1,4 @@
+import { DocView } from './DocView.tsx';
 import { useEffect, useState } from 'react';
 import type { Feature } from '../../../src/core/model.ts';
 import { ProgressBar } from '../components/ProgressBar.tsx';
@@ -6,7 +7,15 @@ import { useData } from '../data/context.ts';
 import { useT, type MessageKey } from '../i18n/index.ts';
 import { docHref } from '../router.ts';
 
-export function FeatureView({ featureId }: { featureId: string }) {
+export function FeatureView({
+  featureId,
+  artifact,
+  anchor = null,
+}: {
+  featureId: string;
+  artifact?: string;
+  anchor?: string | null;
+}) {
   const t = useT();
   const { source, projectVersion } = useData();
   const [feature, setFeature] = useState<Feature | null | undefined>(undefined);
@@ -25,6 +34,24 @@ export function FeatureView({ featureId }: { featureId: string }) {
   if (feature === undefined) return <p className="muted">{t('doc.loading')}</p>;
   if (feature === null) return <div className="notice warn">{t('feature.notFound', { id: featureId })}</div>;
 
+  if (artifact) {
+    const slot = feature.artifacts.find((a) => a.kind === artifact);
+    if (!slot || slot.status === 'missing') return <div className="notice warn">{t('artifact.missing')}</div>;
+    if (slot.kind !== 'contracts' && slot.kind !== 'checklists' && slot.docs[0])
+      return <DocView docId={slot.docs[0].id} anchor={anchor} />;
+    return (
+      <section>
+        <h1>{t(`artifact.${slot.kind}` as MessageKey)}</h1>
+        <ul>
+          {slot.docs.map((d) => (
+            <li key={d.id}>
+              <a href={docHref(d.id)}>{d.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
   const spec = feature.specSummary;
   const specDoc = feature.clarifications.specDocId;
   const tasksDoc = feature.tasks?.docId;

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { safeFile } from './safe-read.ts';
 import type { DocFormat } from './model.ts';
 
 export const CONSTITUTION_PATH = '.specify/memory/constitution.md';
@@ -109,7 +110,7 @@ export function scanProject(root: string): ScanResult {
   if (!result.isSpecKit) return result;
 
   const add = (e: DocEntry | null) => {
-    if (e) docs.set(e.id, e);
+    if (e && safeFile(rootReal, e.path)) docs.set(e.id, e);
   };
 
   const constReal = realInside(rootReal, path.join(rootReal, CONSTITUTION_PATH));

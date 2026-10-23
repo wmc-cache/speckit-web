@@ -30,7 +30,7 @@
 返回完整 `Document`（含 `html`、`outline`、`anchors`、`clarificationMarks`）。
 
 - 未登记的 ID：`404 { "error": "DOC_NOT_FOUND" }`（包括所有越界、被排除的文件——不区分“不存在”与“不允许”，避免探测）。
-- 文档超过 1 MB：`html` 为前 1 MB 内容渲染结果，并带 `"truncated": true, "parts": <n>`；`GET /api/docs/:docId?part=<k>` 获取后续分段。
+- 大文档整篇解析后按完整 HTML 内容块分段，目标段大小约 1 MB（单个完整块可超过此值），避免截断代码围栏或重置锚点。`html` 为首段，并带 `"truncated": true, "parts": <n>`；`GET /api/docs/:docId?part=<k>` 获取后续分段。所有分段共享整篇 `outline`、`anchors`、`clarificationMarks`，`anchorParts` 将每个锚点映射到从 0 开始的分段编号，供深链接自动加载。
 
 ## GET `/api/search?q=<关键词>&limit=<n>`
 
@@ -77,7 +77,7 @@ SSE 流。事件：
 
 请求体：`{ "planId": "<id>", "confirmOverwrite": true|false }`。
 
-- `planId` 不存在或已过期（10 分钟）：`410 { "error": "PLAN_EXPIRED" }`。
+- `planId` 不存在、已过期（10 分钟）或目标状态在预览后改变：`410 { "error": "PLAN_EXPIRED" }`。
 - `requiresConfirmation` 为 true 而 `confirmOverwrite` 不为 true：`409 { "error": "CONFIRMATION_REQUIRED" }`。
 - 成功：`200 { "status": "succeeded", "projectRoot": "<相对路径或 .>", "nextSteps": ["…"] }`；若目标为新子目录，服务把查看根目录切换到该子目录，并推送 `change`（`type: "project"`）。
 - 应用失败并已回滚：`500 { "error": "APPLY_FAILED", "rolledBack": true, "leftovers": [] }`；若有无法回滚的文件，在 `leftovers` 中列出（FR-026）。

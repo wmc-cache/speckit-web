@@ -147,7 +147,7 @@ export function InitWizard() {
       if (e instanceof ApiRequestError && e.code === 'INVALID_OPTIONS')
         setFieldErrors((e.body.fields ?? {}) as Record<string, string>);
       else if (e instanceof ApiRequestError)
-        setError(`${e.code}${e.body.log ? `\n${String(e.body.log)}` : ''}`);
+        setError(`${t('init.failed')}${e.body.log ? `\n${String(e.body.log)}` : ''}`);
       else setError(String(e));
     } finally {
       setBusy(false);
@@ -228,7 +228,7 @@ export function InitWizard() {
                 <span className="muted">{t(`init.target.state.${info.targetState}` as MessageKey)}</span>
               )}
             </div>
-            {fieldErrors.target && <span className="field-error">{fieldErrors.target}</span>}
+            {fieldErrors.target && <span className="field-error">{t(fieldErrors.target as MessageKey)}</span>}
           </div>
           {targetKind === 'new' && (
             <div className="form-row">
@@ -254,7 +254,9 @@ export function InitWizard() {
               className="align-left"
               testId="integration-dropdown"
             />
-            {fieldErrors.integration && <span className="field-error">{fieldErrors.integration}</span>}
+            {fieldErrors.integration && (
+              <span className="field-error">{t(fieldErrors.integration as MessageKey)}</span>
+            )}
           </div>
           {integration === OTHER && (
             <div className="form-row">

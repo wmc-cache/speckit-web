@@ -7,7 +7,7 @@ import { docHref } from '../router.ts';
 export function Outline({ docId, outline }: { docId: string; outline: Heading[] }) {
   const t = useT();
   const [active, setActive] = useState<string | null>(null);
-  const items = useMemo(() => outline.filter((h) => h.depth >= 2 && h.depth <= 4), [outline]);
+  const items = useMemo(() => outline.filter((h) => h.depth >= 1 && h.depth <= 6), [outline]);
 
   useEffect(() => {
     const els = items.map((h) => document.getElementById(h.anchor)).filter((e): e is HTMLElement => !!e);

@@ -61,6 +61,8 @@ export interface RenderResult {
   html: string;
   outline: Heading[];
   anchors: Record<string, string>;
+  htmlParts: string[];
+  anchorParts: Record<string, number>;
 }
 
 /** ```mermaid blocks become `<pre class="mermaid">` with the raw source, rendered in the browser. */
@@ -101,7 +103,22 @@ export async function renderMarkdown(text: string, ctx: RenderContext): Promise<
     })
     .use(rehypeStringify);
   const hast = (await processor.run(mdast)) as HastRoot;
-  return { html: processor.stringify(hast), outline, anchors };
+  const htmlParts: string[] = [];
+  const anchorParts: Record<string, number> = {};
+  let chunk = '';
+  for (const child of hast.children) {
+    const html = processor.stringify({ type: 'root', children: [child] });
+    if (chunk && Buffer.byteLength(chunk) + Buffer.byteLength(html) > PART_SIZE) {
+      htmlParts.push(chunk);
+      chunk = '';
+    }
+    visit({ type: 'root', children: [child] } as HastRoot, 'element', (node: Element) => {
+      if (typeof node.properties.id === 'string') anchorParts[node.properties.id] = htmlParts.length;
+    });
+    chunk += html;
+  }
+  if (chunk || !htmlParts.length) htmlParts.push(chunk);
+  return { html: htmlParts.join(''), htmlParts, anchorParts, outline, anchors };
 }
 
 const CODE_LANG: Record<string, string> = { yaml: 'yaml', json: 'json' };

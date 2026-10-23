@@ -142,3 +142,21 @@ describe('init API', () => {
     expect((await req('POST', '/api/init/apply', { planId: plan.planId })).status).toBe(410);
   });
 });
+
+it('rejects padded traversal and linked initialization targets', async () => {
+  const { root, req } = setup();
+  expect((await req('POST', '/api/init/plan', body({ kind: 'new', name: ' .. ' }))).status).toBe(400);
+  const outside = tmpDir();
+  fs.symlinkSync(outside, path.join(root, 'child'), 'dir');
+  expect((await req('POST', '/api/init/plan', body({ kind: 'new', name: 'child' }))).status).toBe(400);
+  expect(fs.readdirSync(outside)).toEqual([]);
+});
+it('expires a plan when target contents change after preview', async () => {
+  const { root, req } = setup();
+  const plan = await (await req('POST', '/api/init/plan', body())).json();
+  fs.writeFileSync(path.join(root, 'user.txt'), 'KEEP');
+  const res = await req('POST', '/api/init/apply', { planId: plan.planId, confirmOverwrite: true });
+  expect(res.status).toBe(410);
+  expect(fs.readFileSync(path.join(root, 'user.txt'), 'utf8')).toBe('KEEP');
+  expect(fs.existsSync(path.join(root, '.specify'))).toBe(false);
+});

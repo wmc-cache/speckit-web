@@ -49,6 +49,7 @@ export interface DocumentData extends DocumentRef {
   size: number;
   truncated: boolean;
   parts: number;
+  anchorParts: Record<string, number>;
   part: number;
 }
 

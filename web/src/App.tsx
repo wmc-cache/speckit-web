@@ -92,7 +92,7 @@ function Content() {
   const t = useT();
   const route = useRoute();
   const { project, projectError, reloadProject, source } = useData();
-  const [seg0, seg1] = route.segments;
+  const [seg0, seg1, artifact] = route.segments;
 
   if (projectError)
     return (
@@ -111,7 +111,14 @@ function Content() {
     case 'constitution':
       return <ConstitutionView />;
     case 'f':
-      return <FeatureView key={seg1} featureId={seg1 ?? ''} />;
+      return (
+        <FeatureView
+          key={`${seg1}/${artifact ?? ''}`}
+          featureId={seg1 ?? ''}
+          artifact={artifact}
+          anchor={route.query.get('h')}
+        />
+      );
     case 'd':
       return (
         <DocView

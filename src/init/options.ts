@@ -19,10 +19,11 @@ export function defaultOptions(entry: InitEntry, platform: NodeJS.Platform = pro
 
 /** Problem with a new directory name, or null when valid. */
 export function nameError(name: unknown): string | null {
-  if (typeof name !== 'string' || !name.trim()) return 'name is required';
-  if (name === '.' || name === '..') return 'name must not be "." or ".."';
-  if (/[\\/]/.test(name)) return 'name must not contain path separators';
-  if (/[\0<>:"|?*]/.test(name)) return 'name contains invalid characters';
+  if (typeof name !== 'string' || !name.trim()) return 'init.error.nameRequired';
+  const normalized = name.trim();
+  if (normalized === '.' || normalized === '..') return 'init.error.nameDot';
+  if (/[\\/]/.test(normalized)) return 'init.error.nameSeparator';
+  if (/[\0<>:"|?*]/.test(normalized)) return 'init.error.nameInvalid';
   return null;
 }
 
@@ -38,17 +39,16 @@ export function validateOptions(
     const err = nameError(target.name);
     if (err) fields.target = err;
     else parsedTarget = { kind: 'new', name: String(target.name).trim() };
-  } else fields.target = 'target must be {kind:"here"} or {kind:"new", name}';
+  } else fields.target = 'init.error.targetInvalid';
 
   const integration = typeof raw.integration === 'string' ? raw.integration.trim() : '';
-  if (!integration) fields.integration = 'integration must be a non-empty key';
-  else if (!/^[A-Za-z0-9][\w.-]*$/.test(integration))
-    fields.integration = 'integration key contains invalid characters';
+  if (!integration) fields.integration = 'init.error.integrationRequired';
+  else if (!/^[A-Za-z0-9][\w.-]*$/.test(integration)) fields.integration = 'init.error.integrationInvalid';
 
   if (raw.script !== 'sh' && raw.script !== 'ps' && raw.script !== 'py')
-    fields.script = 'script must be sh, ps or py';
+    fields.script = 'init.error.scriptInvalid';
   if (raw.featureNumbering !== 'sequential' && raw.featureNumbering !== 'timestamp')
-    fields.featureNumbering = 'featureNumbering must be sequential or timestamp';
+    fields.featureNumbering = 'init.error.numberingInvalid';
 
   if (Object.keys(fields).length || !parsedTarget) return { ok: false, fields };
   return {

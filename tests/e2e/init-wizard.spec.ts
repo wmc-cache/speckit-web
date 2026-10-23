@@ -42,6 +42,11 @@ test('initializes an empty directory from the browser (US3)', async ({ page }) =
   await page.keyboard.press('Enter');
   await expect(button).toContainText('Claude Code');
 
+  await wizard.getByRole('button', { name: '新建子目录' }).click();
+  await page.locator('#init-name').fill(' .. ');
+  await wizard.getByRole('button', { name: '生成预览' }).click();
+  await expect(wizard).toContainText('目录名称不能为 . 或 ..。');
+  await wizard.getByRole('button', { name: '当前目录' }).click();
   await wizard.getByRole('button', { name: '生成预览' }).click();
   await expect(page.getByTestId('init-files')).toContainText('.specify/init-options.json');
   await wizard.getByRole('button', { name: '开始初始化' }).click();
