@@ -1,0 +1,16 @@
+node_modules/
+dist/
+speckit-site/
+test-results/
+playwright-report/
+coverage/
+tests/perf/.generated/
+*.log
+.env*
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/
+.claude/settings.local.json

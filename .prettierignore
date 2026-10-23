@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+speckit-site/
+pnpm-lock.yaml
+.specify/
+.claude/
+specs/
+tests/fixtures/
+examples/demo-project/

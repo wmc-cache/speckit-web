@@ -1,0 +1,11 @@
+{
+  "order": ["003-mixed", "20250101-090000-delta", "20260101-120000-gamma"],
+  "unrecognized": [],
+  "currentFeatureId": null,
+  "constitutionFilled": null,
+  "features": {
+    "003-mixed": { "tasks": null, "checklists": {}, "clarifications": { "open": 0, "sessions": 0 }, "stage": "specify" },
+    "20250101-090000-delta": { "tasks": null, "checklists": {}, "clarifications": { "open": 0, "sessions": 0 }, "stage": "specify" },
+    "20260101-120000-gamma": { "tasks": null, "checklists": {}, "clarifications": { "open": 0, "sessions": 0 }, "stage": "specify" }
+  }
+}

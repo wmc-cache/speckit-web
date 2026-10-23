@@ -1,0 +1,190 @@
+import { useEffect, useState } from 'react';
+import type { Feature } from '../../../src/core/model.ts';
+import { ProgressBar } from '../components/ProgressBar.tsx';
+import { StageBar } from '../components/StageBar.tsx';
+import { useData } from '../data/context.ts';
+import { useT, type MessageKey } from '../i18n/index.ts';
+import { docHref } from '../router.ts';
+
+export function FeatureView({ featureId }: { featureId: string }) {
+  const t = useT();
+  const { source, projectVersion } = useData();
+  const [feature, setFeature] = useState<Feature | null | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    source.getFeature(featureId).then(
+      (f) => !cancelled && setFeature(f),
+      () => !cancelled && setFeature(null),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [source, featureId, projectVersion]);
+
+  if (feature === undefined) return <p className="muted">{t('doc.loading')}</p>;
+  if (feature === null) return <div className="notice warn">{t('feature.notFound', { id: featureId })}</div>;
+
+  const spec = feature.specSummary;
+  const specDoc = feature.clarifications.specDocId;
+  const tasksDoc = feature.tasks?.docId;
+
+  return (
+    <section data-testid="feature-view">
+      <p className="doc-header">
+        <span className="badge">{feature.id}</span>
+      </p>
+      <h1 className="page-title">{feature.title}</h1>
+      <p className="page-subtitle">
+        {t('doc.updated', { time: new Date(feature.updatedAt).toLocaleString() })}
+      </p>
+
+      {feature.stage && (
+        <div className="card">
+          <h2>{t('feature.progress')}</h2>
+          <StageBar stage={feature.stage} />
+        </div>
+      )}
+
+      <div className="grid-2">
+        <div className="card" data-testid="feature-tasks">
+          <h2>{t('feature.tasks')}</h2>
+          {feature.tasks ? (
+            <>
+              <ProgressBar done={feature.tasks.done} total={feature.tasks.total} />
+              <details>
+                <summary>{t('feature.byPhase')}</summary>
+                <ul className="progress-groups">
+                  {feature.tasks.byPhase.map((p) => (
+                    <li key={p.index}>
+                      <span>
+                        Phase {p.index}: {p.title}
+                      </span>
+                      <ProgressBar done={p.done} total={p.total} />
+                    </li>
+                  ))}
+                </ul>
+              </details>
+              <details>
+                <summary>{t('feature.byStory')}</summary>
+                <ul className="progress-groups">
+                  {feature.tasks.byStory.map((s) => (
+                    <li key={s.story ?? 'none'}>
+                      <span>{s.story ?? t('feature.noStory')}</span>
+                      <ProgressBar done={s.done} total={s.total} />
+                    </li>
+                  ))}
+                </ul>
+              </details>
+              {tasksDoc && (
+                <p>
+                  <a href={docHref(tasksDoc)}>tasks.md →</a>
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="muted">{t('artifact.missing')}</p>
+          )}
+        </div>
+
+        <div className="card" data-testid="feature-clarifications">
+          <h2>
+            {feature.clarifications.open > 0
+              ? t('feature.clarifyOpen', { n: feature.clarifications.open })
+              : t('feature.noClarify')}
+          </h2>
+          {specDoc && feature.clarifications.marks.length > 0 && (
+            <ol className="clarify-list">
+              {feature.clarifications.marks.map((m) => (
+                <li key={m.anchor}>
+                  <a href={docHref(specDoc, m.anchor)}>{m.text || m.anchor}</a>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      </div>
+
+      <div className="card" data-testid="feature-checklists">
+        <h2>{t('feature.checklists')}</h2>
+        {feature.checklists.length === 0 ? (
+          <p className="muted">{t('artifact.missing')}</p>
+        ) : (
+          <ul className="progress-groups">
+            {feature.checklists.map((c) => (
+              <li key={c.docId} data-checklist={c.name}>
+                <a href={docHref(c.docId)}>{c.name}</a>
+                {c.allPassed ? (
+                  <span className="badge ok">{t('feature.allPassed')}</span>
+                ) : (
+                  <ProgressBar done={c.checked} total={c.total} />
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="card">
+        <h2>{t('feature.documents')}</h2>
+        <ul className="artifact-list">
+          {feature.artifacts.map((slot) =>
+            slot.status === 'missing' ? (
+              <li key={slot.kind} className="muted">
+                {t(`artifact.${slot.kind}` as MessageKey)}{' '}
+                <span className="badge">{t('artifact.missing')}</span>
+              </li>
+            ) : (
+              slot.docs.map((d) => (
+                <li key={d.id}>
+                  <a href={docHref(d.id)}>{t(`artifact.${slot.kind}` as MessageKey)}</a>{' '}
+                  <span className="doc-path">{d.path}</span>
+                </li>
+              ))
+            ),
+          )}
+          {feature.extraDocs.map((d) => (
+            <li key={d.id}>
+              <a href={docHref(d.id)}>{d.title}</a> <span className="doc-path">{d.path}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {spec && (
+        <div className="grid-2">
+          <div className="card">
+            <h2>{t('feature.stories')}</h2>
+            <ul className="plain-list">
+              {spec.stories.map((s) => (
+                <li key={s.anchor}>
+                  {s.priority && <span className="badge accent">{s.priority}</span>}{' '}
+                  {specDoc ? <a href={docHref(specDoc, s.anchor)}>{s.title}</a> : s.title}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="card">
+            <h2>
+              {t('feature.requirements')} · {t('feature.successCriteria')}
+            </h2>
+            <ul className="plain-list">
+              {[...spec.requirements, ...spec.successCriteria].map((r) => (
+                <li key={r.id}>
+                  {specDoc ? (
+                    <a href={docHref(specDoc, r.anchor)} className="xref">
+                      {r.id}
+                    </a>
+                  ) : (
+                    r.id
+                  )}{' '}
+                  <span className="muted">{r.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

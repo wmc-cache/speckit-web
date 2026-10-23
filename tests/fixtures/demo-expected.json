@@ -1,0 +1,21 @@
+{
+  "order": ["001-team-calendar", "002-user-login", "003-notification-center"],
+  "unrecognized": [],
+  "currentFeatureId": "002-user-login",
+  "constitutionFilled": true,
+  "features": {
+    "001-team-calendar": { "tasks": null, "checklists": {}, "clarifications": { "open": 0, "sessions": 0 }, "stage": "specify" },
+    "002-user-login": {
+      "tasks": {
+        "total": 10,
+        "done": 4,
+        "byPhase": [[1, 2, 2], [2, 2, 1], [3, 3, 1], [4, 1, 0], [5, 1, 0], [6, 1, 0]],
+        "byStory": { "US1": [3, 1], "US2": [1, 0], "US3": [1, 0], "null": [5, 3] }
+      },
+      "checklists": { "requirements": [16, 16] },
+      "clarifications": { "open": 2, "sessions": 0 },
+      "stage": "implement"
+    },
+    "003-notification-center": { "tasks": null, "checklists": {}, "clarifications": { "open": 0, "sessions": 1 }, "stage": "plan" }
+  }
+}

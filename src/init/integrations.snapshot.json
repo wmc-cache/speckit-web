@@ -1,0 +1,195 @@
+{
+  "source": "specify integration list (specify-cli 0.16.4)",
+  "integrations": [
+    {
+      "key": "agy",
+      "name": "Antigravity",
+      "requiresCli": true
+    },
+    {
+      "key": "alquimia",
+      "name": "Alquimia AI",
+      "requiresCli": true
+    },
+    {
+      "key": "amp",
+      "name": "Amp",
+      "requiresCli": true
+    },
+    {
+      "key": "auggie",
+      "name": "Auggie CLI",
+      "requiresCli": true
+    },
+    {
+      "key": "bob",
+      "name": "IBM Bob",
+      "requiresCli": false
+    },
+    {
+      "key": "claude",
+      "name": "Claude Code",
+      "requiresCli": true
+    },
+    {
+      "key": "cline",
+      "name": "Cline",
+      "requiresCli": false
+    },
+    {
+      "key": "codebuddy",
+      "name": "CodeBuddy",
+      "requiresCli": true
+    },
+    {
+      "key": "codex",
+      "name": "Codex CLI",
+      "requiresCli": true
+    },
+    {
+      "key": "command-code",
+      "name": "Command Code",
+      "requiresCli": true
+    },
+    {
+      "key": "copilot",
+      "name": "GitHub Copilot",
+      "requiresCli": false
+    },
+    {
+      "key": "cursor-agent",
+      "name": "Cursor",
+      "requiresCli": false
+    },
+    {
+      "key": "devin",
+      "name": "Devin for Terminal",
+      "requiresCli": true
+    },
+    {
+      "key": "droid",
+      "name": "Factory Droid",
+      "requiresCli": true
+    },
+    {
+      "key": "firebender",
+      "name": "Firebender",
+      "requiresCli": false
+    },
+    {
+      "key": "forge",
+      "name": "Forge",
+      "requiresCli": true
+    },
+    {
+      "key": "gemini",
+      "name": "Gemini CLI",
+      "requiresCli": true
+    },
+    {
+      "key": "generic",
+      "name": "Generic (bring your own agent)",
+      "requiresCli": false
+    },
+    {
+      "key": "goose",
+      "name": "Goose",
+      "requiresCli": true
+    },
+    {
+      "key": "grok",
+      "name": "Grok Build",
+      "requiresCli": true
+    },
+    {
+      "key": "hermes",
+      "name": "Hermes Agent",
+      "requiresCli": true
+    },
+    {
+      "key": "junie",
+      "name": "Junie",
+      "requiresCli": true
+    },
+    {
+      "key": "kilocode",
+      "name": "Kilo Code",
+      "requiresCli": false
+    },
+    {
+      "key": "kimi",
+      "name": "Kimi Code",
+      "requiresCli": true
+    },
+    {
+      "key": "kiro-cli",
+      "name": "Kiro CLI",
+      "requiresCli": true
+    },
+    {
+      "key": "lingma",
+      "name": "Lingma",
+      "requiresCli": false
+    },
+    {
+      "key": "omp",
+      "name": "Oh My Pi",
+      "requiresCli": true
+    },
+    {
+      "key": "opencode",
+      "name": "opencode",
+      "requiresCli": true
+    },
+    {
+      "key": "pi",
+      "name": "Pi Coding Agent",
+      "requiresCli": true
+    },
+    {
+      "key": "qodercli",
+      "name": "Qoder CLI",
+      "requiresCli": true
+    },
+    {
+      "key": "qwen",
+      "name": "Qwen Code",
+      "requiresCli": true
+    },
+    {
+      "key": "rovodev",
+      "name": "RovoDev ACLI",
+      "requiresCli": true
+    },
+    {
+      "key": "shai",
+      "name": "SHAI",
+      "requiresCli": true
+    },
+    {
+      "key": "tabnine",
+      "name": "Tabnine CLI",
+      "requiresCli": true
+    },
+    {
+      "key": "trae",
+      "name": "Trae",
+      "requiresCli": false
+    },
+    {
+      "key": "vibe",
+      "name": "Mistral Vibe",
+      "requiresCli": true
+    },
+    {
+      "key": "zcode",
+      "name": "ZCode",
+      "requiresCli": true
+    },
+    {
+      "key": "zed",
+      "name": "Zed",
+      "requiresCli": false
+    }
+  ]
+}

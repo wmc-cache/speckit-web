@@ -1,0 +1,34 @@
+name: Bug report / 缺陷报告
+description: Something does not work as expected / 功能不符合预期
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / 发生了什么？
+      description: Include the command you ran and what you saw. / 写明执行的命令和看到的结果。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior / 预期行为
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: A minimal Spec Kit project (or the relevant files) helps a lot. / 最好附上最小的 Spec Kit 项目或相关文件。
+  - type: input
+    id: version
+    attributes:
+      label: speckit-web version / 版本
+      placeholder: npx speckit-web --version
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: OS, Node.js and browser / 操作系统、Node.js 与浏览器
+      placeholder: macOS 26, Node 22.12, Chrome 140

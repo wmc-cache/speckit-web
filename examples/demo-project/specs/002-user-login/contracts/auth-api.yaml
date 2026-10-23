@@ -1,0 +1,15 @@
+openapi: 3.1.0
+info:
+  title: Auth API
+  version: 0.1.0
+paths:
+  /sessions:
+    post:
+      summary: Create a session with email and password
+      responses:
+        '201':
+          description: Session created
+        '401':
+          description: Wrong credentials
+        '423':
+          description: Account locked

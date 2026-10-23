@@ -1,0 +1,9 @@
+{
+  "order": ["001-one"],
+  "unrecognized": [],
+  "currentFeatureId": null,
+  "constitutionFilled": false,
+  "features": {
+    "001-one": { "tasks": null, "checklists": {}, "clarifications": { "open": 2, "sessions": 0 }, "stage": "specify" }
+  }
+}

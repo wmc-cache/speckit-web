@@ -1,0 +1,9 @@
+{
+  "order": ["001-登录功能"],
+  "unrecognized": [],
+  "currentFeatureId": null,
+  "constitutionFilled": true,
+  "features": {
+    "001-登录功能": { "tasks": null, "checklists": {}, "clarifications": { "open": 0, "sessions": 0 }, "stage": "specify" }
+  }
+}

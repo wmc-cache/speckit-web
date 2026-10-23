@@ -1,0 +1,221 @@
+.doc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 40px;
+  align-items: start;
+}
+.doc-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.doc-path {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.outline {
+  position: sticky;
+  top: calc(var(--topbar-h) + 20px);
+  max-height: calc(100vh - var(--topbar-h) - 40px);
+  overflow-y: auto;
+  font-size: 13px;
+}
+.outline h2 {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 8px;
+}
+.outline ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--border);
+}
+.outline a {
+  display: block;
+  padding: 3px 10px;
+  color: var(--text-muted);
+  margin-left: -1px;
+  border-left: 2px solid transparent;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.outline a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+.outline a.active {
+  color: var(--accent-strong);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+.outline .depth-3 a {
+  padding-left: 22px;
+}
+.outline .depth-4 a,
+.outline .depth-5 a,
+.outline .depth-6 a {
+  padding-left: 34px;
+}
+
+/* Rendered Markdown */
+.markdown {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  line-height: 1.3;
+  scroll-margin-top: calc(var(--topbar-h) + 16px);
+}
+.markdown h1 {
+  font-size: 28px;
+  margin: 0 0 18px;
+}
+.markdown h2 {
+  font-size: 21px;
+  margin: 36px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.markdown h3 {
+  font-size: 17px;
+  margin: 28px 0 10px;
+}
+.markdown h4 {
+  font-size: 15px;
+  margin: 22px 0 8px;
+}
+.markdown p,
+.markdown ul,
+.markdown ol,
+.markdown blockquote,
+.markdown table,
+.markdown pre {
+  margin: 0 0 14px;
+}
+.markdown ul,
+.markdown ol {
+  padding-left: 24px;
+}
+.markdown li + li {
+  margin-top: 3px;
+}
+.markdown li > p {
+  margin: 0;
+}
+.markdown li[id] {
+  scroll-margin-top: calc(var(--topbar-h) + 16px);
+}
+.markdown .contains-task-list {
+  list-style: none;
+  padding-left: 4px;
+}
+.markdown .task-list-item input {
+  margin: 0 8px 0 0;
+  vertical-align: -1px;
+  accent-color: var(--accent);
+}
+.markdown blockquote {
+  padding: 4px 14px;
+  border-left: 3px solid var(--border-strong);
+  color: var(--text-muted);
+}
+.markdown code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--bg-sunken);
+}
+.markdown pre {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  background: var(--bg-sunken);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.markdown pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+.markdown pre.mermaid {
+  background: var(--bg-elevated);
+  text-align: center;
+}
+.markdown table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  max-width: 100%;
+  font-size: 14px;
+}
+.markdown th,
+.markdown td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown th {
+  background: var(--bg-sunken);
+  font-weight: 600;
+}
+.markdown hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+.markdown img {
+  max-width: 100%;
+}
+.markdown .unpublished-link {
+  color: var(--text-muted);
+  text-decoration: underline dotted;
+  cursor: help;
+}
+.markdown mark.needs-clarification {
+  background: var(--warn-soft);
+  color: var(--warn);
+  padding: 0 3px;
+  border-radius: 3px;
+  font-weight: 550;
+  scroll-margin-top: calc(var(--topbar-h) + 16px);
+}
+.markdown a.xref {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+.markdown .target-flash {
+  animation: flash 1.6s ease;
+}
+@keyframes flash {
+  0%,
+  40% {
+    background: var(--mark);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+@media (max-width: 1100px) {
+  .doc-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .outline {
+    display: none;
+  }
+}

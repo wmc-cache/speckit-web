@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability / 安全问题
+    url: https://github.com/speckit-web/speckit-web/security/advisories/new
+    about: Please report security issues privately. / 请私下报告安全问题。
+  - name: Spec Kit itself / Spec Kit 本身的问题
+    url: https://github.com/github/spec-kit/issues
+    about: Problems with specify or the templates belong to github/spec-kit. / specify 或模板的问题请到 github/spec-kit 反馈。

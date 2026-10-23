@@ -1,0 +1,57 @@
+#!/usr/bin/env node
+// Fake `specify` CLI for tests. Mimics the parts of github/spec-kit that speckit-web relies on.
+// SPECIFY_FAKE_FAIL=1 makes `init` fail.
+const fs = require('node:fs');
+const path = require('node:path');
+
+const [cmd, ...rest] = process.argv.slice(2);
+const opt = (name) => {
+  const i = rest.indexOf(name);
+  return i >= 0 ? rest[i + 1] : undefined;
+};
+
+if (cmd === 'version') {
+  console.log('│     CLI Version    0.16.4-fake                                          │');
+  process.exit(0);
+}
+
+if (cmd === 'integration' && rest[0] === 'list') {
+  console.log('┃ Key          ┃ Name          ┃ Status         ┃ CLI Required ┃ Multi-install ┃');
+  console.log('│ claude       │ Claude Code   │ installed      │ yes          │ yes           │');
+  console.log('│ fakeagent    │ Fake Agent    │                │ no (IDE)     │ yes           │');
+  console.log('│              │ Extra Line    │                │              │               │');
+  process.exit(0);
+}
+
+if (cmd === 'init') {
+  const target = rest.find((a, i) => !a.startsWith('--') && !(rest[i - 1] || '').startsWith('--integration') && !(rest[i - 1] || '').startsWith('--script'));
+  if (process.env.SPECIFY_FAKE_FAIL === '1') {
+    console.error('Error: something went wrong inside specify');
+    process.exit(1);
+  }
+  const integration = opt('--integration') || 'copilot';
+  const script = opt('--script') || 'sh';
+  const root = path.resolve(target);
+  const write = (rel, content) => {
+    const file = path.join(root, rel);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, content);
+  };
+  write(
+    '.specify/init-options.json',
+    JSON.stringify(
+      { ai: integration, feature_numbering: 'sequential', here: false, integration, script, speckit_version: '0.16.4-fake' },
+      null,
+      2,
+    ) + '\n',
+  );
+  write('.specify/memory/constitution.md', '# [PROJECT_NAME] Constitution\n\n### [PRINCIPLE_1_NAME]\n');
+  write('.specify/templates/spec-template.md', '# Feature Specification: [FEATURE NAME]\n');
+  write(`.specify/scripts/${script === 'ps' ? 'powershell/common.ps1' : 'bash/common.sh'}`, '# common\n');
+  if (integration === 'claude') write('.claude/skills/speckit-specify/SKILL.md', '# speckit-specify\n');
+  console.log(`Project ready: ${root}`);
+  process.exit(0);
+}
+
+console.error(`fake specify: unknown command ${cmd}`);
+process.exit(2);
