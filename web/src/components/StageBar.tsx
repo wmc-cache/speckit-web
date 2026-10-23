@@ -5,7 +5,7 @@ export function StageBar({ stage, compact }: { stage: StageStatus; compact?: boo
   const t = useT();
   return (
     <ol className="stage-bar" data-testid="stage-bar">
-      {stage.stages.map((s) => {
+      {stage.stages.map((s, index) => {
         const stateKey = s.skipped ? 'skipped' : s.state;
         const label = t(`stage.${s.key}` as MessageKey);
         const stateLabel = t(`stageState.${stateKey}` as MessageKey);
@@ -18,10 +18,11 @@ export function StageBar({ stage, compact }: { stage: StageStatus; compact?: boo
             data-stage={s.key}
             data-state={stateKey}
           >
-            <span className="stage-dot" aria-hidden />
+            <span className="stage-number" aria-hidden>
+              {s.state === 'done' ? '✓' : String(index + 1).padStart(2, '0')}
+            </span>
             <span>{label}</span>
-            {!compact && <span className="sr-only">: {stateLabel}</span>}
-            {!compact && s.state === 'optional_unknown' && <span className="stage-note">{stateLabel}</span>}
+            {!compact && <span className="stage-note">{stateLabel}</span>}
           </li>
         );
       })}

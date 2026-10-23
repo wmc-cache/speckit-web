@@ -1,3 +1,4 @@
+import { nextStep, nextCommand } from '../lib/next-step.ts';
 import { ProgressBar } from '../components/ProgressBar.tsx';
 import { useData } from '../data/context.ts';
 import { useT, type MessageKey } from '../i18n/index.ts';
@@ -18,6 +19,23 @@ export function Overview() {
           numbering: t(`numbering.${project.featureNumbering}` as MessageKey),
         })}
       </p>
+      <div className="overview-metrics feature-metrics">
+        <div className="metric">
+          <span>{t('guide.features')}</span>
+          <strong>{project.features.length}</strong>
+        </div>
+        <div className="metric">
+          <span>{t('guide.taskMetric')}</span>
+          <strong>
+            {project.features.reduce((n, f) => n + (f.tasks?.done ?? 0), 0)}
+            <small> / {project.features.reduce((n, f) => n + (f.tasks?.total ?? 0), 0)}</small>
+          </strong>
+        </div>
+        <div className="metric">
+          <span>{t('guide.openMetric')}</span>
+          <strong>{project.features.reduce((n, f) => n + f.clarifications.open, 0)}</strong>
+        </div>
+      </div>
       {project.features.length === 0 ? (
         <div className="notice">{t('overview.empty')}</div>
       ) : (
@@ -29,6 +47,7 @@ export function Overview() {
                 <th>{t('overview.col.stage')}</th>
                 <th>{t('overview.col.tasks')}</th>
                 <th>{t('overview.col.clarify')}</th>
+                <th>{t('guide.nextColumn')}</th>
               </tr>
             </thead>
             <tbody>
@@ -64,6 +83,15 @@ export function Overview() {
                     ) : (
                       <span className="muted">0</span>
                     )}
+                  </td>
+                  <td>
+                    <a href={featureHref(f.id)}>
+                      {t(`guide.${nextStep(f, !!project.constitution?.filled)}.title` as MessageKey)}
+                    </a>
+                    <br />
+                    <code className="next-command-small">
+                      {nextCommand(nextStep(f, !!project.constitution?.filled))}
+                    </code>
                   </td>
                 </tr>
               ))}
