@@ -6,6 +6,13 @@ import { docHref } from '../router.ts';
 /** Table of contents for the open document; highlights the section in view. */
 export function Outline({ docId, outline }: { docId: string; outline: Heading[] }) {
   const t = useT();
+  const [expanded, setExpanded] = useState(() => window.matchMedia('(min-width: 1101px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1101px)');
+    const update = () => setExpanded(mq.matches);
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
   const [active, setActive] = useState<string | null>(null);
   const items = useMemo(() => outline.filter((h) => h.depth >= 1 && h.depth <= 6), [outline]);
 
@@ -22,19 +29,28 @@ export function Outline({ docId, outline }: { docId: string; outline: Heading[] 
     return () => window.removeEventListener('scroll', onScroll);
   }, [items]);
 
-  if (!items.length) return <aside className="outline" />;
+  if (!items.length) return null;
   return (
     <aside className="outline" aria-label={t('doc.outline')}>
-      <h2>{t('doc.outline')}</h2>
-      <ul>
-        {items.map((h) => (
-          <li key={h.anchor} className={`depth-${h.depth}`}>
-            <a href={docHref(docId, h.anchor)} className={active === h.anchor ? 'active' : ''} title={h.text}>
-              {h.text}
-            </a>
-          </li>
-        ))}
-      </ul>
+      <details open={expanded} onToggle={(e) => setExpanded(e.currentTarget.open)}>
+        <summary>
+          {t('doc.outline')} <span className="outline-count">{items.length}</span>
+        </summary>
+        <ul>
+          {items.map((h) => (
+            <li key={h.anchor} className={`depth-${h.depth}`}>
+              <a
+                href={docHref(docId, h.anchor)}
+                aria-current={active === h.anchor ? 'location' : undefined}
+                className={active === h.anchor ? 'active' : ''}
+                title={h.text}
+              >
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
     </aside>
   );
 }

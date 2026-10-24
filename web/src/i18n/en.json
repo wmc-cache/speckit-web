@@ -190,5 +190,6 @@
   "guide.manualReview": "Review the relevant documents manually",
   "guide.universalInstruction": "In this project, work on feature {feature}. Next action: {action}. First confirm the active feature and read its documents and the project constitution. Use the installed Spec Kit workflow for {command}, following this tool’s command or skill syntax. If that workflow is unavailable, explain what is missing before proceeding; do not assume it has run.",
   "guide.instructions": "Execution details",
-  "guide.destination": "Use in your AI coding tool, not a terminal."
+  "guide.destination": "Use in your AI coding tool, not a terminal.",
+  "overview.features": "Feature progress"
 }

@@ -120,37 +120,41 @@ export function DocView({ docId, anchor, highlight }: Props) {
     doc.kind === 'other' || doc.kind === 'constitution' ? null : t(`artifact.${doc.kind}` as MessageKey);
 
   return (
-    <div className="doc-layout">
-      <article className="doc">
-        {state === 'deleted' && (
-          <div className="notice warn" role="alert">
-            {t('doc.deleted')}
-          </div>
+    <section className="reading-workspace">
+      <div className="reading-toolbar">
+        {doc.featureId && (
+          <a href={featureHref(doc.featureId)} className="badge accent">
+            {doc.featureId}
+          </a>
         )}
-        <div className="doc-header">
-          {doc.featureId && (
-            <a href={featureHref(doc.featureId)} className="badge accent">
-              {doc.featureId}
-            </a>
+        {kindLabel && <span className="badge">{kindLabel}</span>}
+        <span className="doc-path">{doc.path}</span>
+        <span className="reading-updated">
+          {t('doc.updated', { time: new Date(doc.updatedAt).toLocaleString(lang) })}
+        </span>
+      </div>
+      <div className="doc-layout">
+        <article className="doc">
+          {state === 'deleted' && (
+            <div className="notice warn" role="alert">
+              {t('doc.deleted')}
+            </div>
           )}
-          {kindLabel && <span className="badge">{kindLabel}</span>}
-          <span className="doc-path">{doc.path}</span>
-          <span>· {t('doc.updated', { time: new Date(doc.updatedAt).toLocaleString(lang) })}</span>
-        </div>
-        {doc.truncated && <div className="notice">{t('doc.truncated')}</div>}
-        <div ref={bodyRef} className="markdown" data-testid="doc-body">
-          <div dangerouslySetInnerHTML={{ __html: doc.html }} />
-          {extraHtml.map((h, i) => (
-            <div key={i} dangerouslySetInnerHTML={{ __html: h }} />
-          ))}
-        </div>
-        {doc.truncated && loaded < doc.parts && (
-          <button type="button" className="button" onClick={() => void loadMore()}>
-            {t('doc.loadMore', { part: loaded + 1, parts: doc.parts })}
-          </button>
-        )}
-      </article>
-      <Outline docId={docId} outline={doc.outline} />
-    </div>
+          {doc.truncated && <div className="notice">{t('doc.truncated')}</div>}
+          <div ref={bodyRef} className="markdown" data-testid="doc-body">
+            <div dangerouslySetInnerHTML={{ __html: doc.html }} />
+            {extraHtml.map((h, i) => (
+              <div key={i} dangerouslySetInnerHTML={{ __html: h }} />
+            ))}
+          </div>
+          {doc.truncated && loaded < doc.parts && (
+            <button type="button" className="button" onClick={() => void loadMore()}>
+              {t('doc.loadMore', { part: loaded + 1, parts: doc.parts })}
+            </button>
+          )}
+        </article>
+        <Outline docId={docId} outline={doc.outline} />
+      </div>
+    </section>
   );
 }

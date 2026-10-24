@@ -1227,3 +1227,123 @@ pre.command {
     row-gap: 10px;
   }
 }
+
+/* Overview shares the feature workspace's compact header and evidence table. */
+.overview-title {
+  min-width: 0;
+}
+.overview-list {
+  padding: 20px 0 0;
+  overflow: hidden;
+}
+.overview-list > .section-heading {
+  padding: 0 20px;
+}
+.overview-list table.data th {
+  font-size: 13px;
+  background: var(--bg-sunken);
+  font-weight: 600;
+}
+.overview-list table.data th,
+.overview-list table.data td {
+  padding: 16px 20px;
+}
+.overview-list table.data th:first-child {
+  width: 25%;
+}
+.overview-list table.data tbody tr:last-child td {
+  border-bottom: 0;
+}
+.overview-list table.data td {
+  line-height: 1.65;
+}
+.overview-feature > a {
+  font-weight: 600;
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.overview-feature .badge {
+  margin: 4px 0 0 8px;
+}
+.overview-list tr.is-current td:first-child {
+  background: var(--accent-soft);
+}
+.overview-list .next-command-small {
+  display: inline-block;
+  margin-top: 4px;
+}
+.overview-list .table-scroll:focus-visible {
+  outline-offset: -3px;
+}
+@media (max-width: 1150px) {
+  .overview-list table.data th,
+  .overview-list table.data td {
+    padding: 12px 16px;
+  }
+}
+@media (max-width: 650px) {
+  .overview-list table.data {
+    min-width: 0;
+  }
+  .overview-list > .section-heading {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 650px) {
+  .overview-list table.data,
+  .overview-list tbody {
+    display: block;
+    width: 100%;
+  }
+  .overview-list thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .overview-list table.data tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px 16px;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .overview-list table.data td {
+    display: block;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+    overflow-wrap: anywhere;
+  }
+  .overview-list td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .overview-list .overview-feature,
+  .overview-list .overview-next {
+    grid-column: 1 / -1;
+  }
+  .overview-list tr.is-current td:first-child {
+    background: transparent;
+  }
+  .overview-list tr.is-current {
+    background: color-mix(in srgb, var(--accent-soft) 30%, var(--bg-elevated));
+  }
+  .overview-list .progress {
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .overview-list .progress-track {
+    flex-basis: 100%;
+  }
+  .overview-list table.data tr:hover td {
+    background: transparent;
+  }
+}
