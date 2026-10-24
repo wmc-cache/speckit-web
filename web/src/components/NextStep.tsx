@@ -8,6 +8,11 @@ export function NextStep({ feature, project }: { feature: FeatureSummary; projec
   const t = useT();
   const step = nextStep(feature, !!project.constitution?.filled);
   const command = nextCommand(step);
+  const instruction = t('guide.universalInstruction', {
+    feature: feature.id,
+    action: t(`guide.${step}.title` as MessageKey),
+    command: command ?? t('guide.manualReview'),
+  });
   const [copied, setCopied] = useState('');
   const [failed, setFailed] = useState(false);
   const copy = async (value: string) => {
@@ -40,11 +45,10 @@ export function NextStep({ feature, project }: { feature: FeatureSummary; projec
         </div>
       )}
       {failed && <p role="alert">{t('guide.copyFailed')}</p>}
-      {command && (
-        <p className="guide-context">
-          {t('guide.where', { agent: project.integration ?? t('guide.agent') })}
-        </p>
-      )}
+      <p className="guide-context">{t('guide.where')}</p>
+      <button type="button" className="button" onClick={() => void copy(instruction)}>
+        {t(copied === instruction ? 'guide.copied' : 'guide.copyInstruction')}
+      </button>
       {project.currentFeatureId !== feature.id && (
         <p className="guide-warning">
           {t('guide.context', { id: feature.id, current: project.currentFeatureId ?? t('guide.unknown') })}

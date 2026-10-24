@@ -30,7 +30,7 @@
   "stageState.skipped": "已跳过",
   "stageState.optional_unknown": "可选·无法自动判断",
   "overview.title": "项目总览",
-  "overview.meta": "Spec Kit {version} · {integration} · {script} · {numbering}",
+  "overview.meta": "Spec Kit {version} · {script} · {numbering}",
   "overview.empty": "还没有特性。在 AI 助手中运行 /speckit-specify 创建第一个特性。",
   "overview.col.feature": "特性",
   "overview.col.stage": "当前阶段",
@@ -151,8 +151,7 @@
   "guide.copy": "复制命令",
   "guide.copied": "已复制",
   "guide.copyFailed": "复制不可用，请选中命令手动复制。",
-  "guide.where": "在本项目的 {agent} AI 助手对话中执行，不是在终端执行。按提示在命令后补充功能或技术背景。",
-  "guide.agent": "编程",
+  "guide.where": "可使用任何能访问本项目的 AI 编程工具。按当前工具的语法调用已安装的 Spec Kit 命令或技能；上方斜杠命令不是终端命令。若工具不识别，可复制下方通用指令。",
   "guide.unknown": "未知",
   "guide.context": "正在查看 {id}，当前工作特性为 {current}。执行前先让助手确认目标为此特性；浏览页面不会切换工作特性。",
   "guide.evidence": "建议基于文档内容推断；任务勾选不等于实现已验证。",
@@ -186,5 +185,8 @@
   "guide.missingTasks": "生成任务清单后，在这里跟踪实现进度。",
   "guide.noChecklist": "尚无检查清单。需要专项需求审查时，可生成清单。",
   "guide.details": "详细信息与依据",
-  "guide.nextColumn": "下一步"
+  "guide.nextColumn": "下一步",
+  "guide.copyInstruction": "复制通用指令",
+  "guide.manualReview": "人工审查相关文档",
+  "guide.universalInstruction": "请在本项目中处理特性 {feature}。下一步：{action}。先确认当前工作特性，读取该特性的文档和项目准则。使用当前工具支持的命令或技能语法，执行已安装的 Spec Kit 工作流：{command}。如果该工作流不可用，请先说明缺少什么，不要假定已经执行。"
 }

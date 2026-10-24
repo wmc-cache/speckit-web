@@ -13,15 +13,24 @@ for (const mode of ['local', 'static'] as const) {
       context,
     }) => {
       await useChinese(page);
+      await page.goto(srv.url);
+      await expect(page.getByTestId('overview').locator('.page-subtitle')).not.toContainText('claude');
       await page.goto(`${srv.url}#/f/001-team-calendar`);
       const guide = page.getByTestId('next-step');
       await expect(guide).toContainText('制定实施方案');
+      await expect(guide).not.toContainText('claude');
+      await expect(guide).toContainText('任何能访问本项目的 AI 编程工具');
       await expect(guide.locator('.command-copy code')).toHaveText('/speckit-plan');
       await expect(guide).toContainText('002-user-login');
       await context.grantPermissions(['clipboard-read', 'clipboard-write']);
       await guide.getByRole('button', { name: '复制命令', exact: true }).click();
       await expect(guide.getByRole('button', { name: '已复制', exact: true })).toBeVisible();
       expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('/speckit-plan');
+      await guide.getByRole('button', { name: '复制通用指令' }).click();
+      const instruction = await page.evaluate(() => navigator.clipboard.readText());
+      expect(instruction).toContain('001-team-calendar');
+      expect(instruction).toContain('/speckit-plan');
+      expect(instruction).not.toContain('claude');
       await page.goto(`${srv.url}#/f/002-user-login`);
       await expect(page.getByTestId('next-step').locator('.command-copy code')).toHaveText(
         '/speckit-clarify',

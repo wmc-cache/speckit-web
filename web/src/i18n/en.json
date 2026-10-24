@@ -30,7 +30,7 @@
   "stageState.skipped": "Skipped",
   "stageState.optional_unknown": "Optional · cannot be detected",
   "overview.title": "Project overview",
-  "overview.meta": "Spec Kit {version} · {integration} · {script} · {numbering}",
+  "overview.meta": "Spec Kit {version} · {script} · {numbering}",
   "overview.empty": "No features yet. Run /speckit-specify in your AI agent to create the first one.",
   "overview.col.feature": "Feature",
   "overview.col.stage": "Current stage",
@@ -151,8 +151,7 @@
   "guide.copy": "Copy command",
   "guide.copied": "Copied",
   "guide.copyFailed": "Copy is unavailable. Select the command and copy it manually.",
-  "guide.where": "Run in the {agent} AI assistant chat inside this project, not in a shell. Add the requested feature or technical context after the command.",
-  "guide.agent": "coding",
+  "guide.where": "Use any AI coding tool with access to this project. Invoke the installed Spec Kit command or skill using that tool’s syntax; the slash command above is not a shell command. If it is not recognized, copy the tool-neutral instructions below.",
   "guide.unknown": "unknown",
   "guide.context": "Viewing {id}; active feature is {current}. Select this feature in your assistant before running the command. Browsing here does not switch the active feature.",
   "guide.evidence": "Inferred from document contents. A checked task is not proof of a verified implementation.",
@@ -186,5 +185,8 @@
   "guide.missingTasks": "Generate tasks to track implementation progress.",
   "guide.noChecklist": "No checklist yet. Create one when a focused requirements review is needed.",
   "guide.details": "Details & evidence",
-  "guide.nextColumn": "Next action"
+  "guide.nextColumn": "Next action",
+  "guide.copyInstruction": "Copy tool-neutral instructions",
+  "guide.manualReview": "Review the relevant documents manually",
+  "guide.universalInstruction": "In this project, work on feature {feature}. Next action: {action}. First confirm the active feature and read its documents and the project constitution. Use the installed Spec Kit workflow for {command}, following this tool’s command or skill syntax. If that workflow is unavailable, explain what is missing before proceeding; do not assume it has run."
 }

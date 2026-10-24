@@ -14,7 +14,6 @@ export function Overview() {
       <p className="page-subtitle">
         {t('overview.meta', {
           version: project.specKitVersion ?? '?',
-          integration: project.integration ?? '?',
           script: project.script ?? '?',
           numbering: t(`numbering.${project.featureNumbering}` as MessageKey),
         })}
