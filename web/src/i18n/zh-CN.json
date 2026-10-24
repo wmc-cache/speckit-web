@@ -188,5 +188,7 @@
   "guide.nextColumn": "下一步",
   "guide.copyInstruction": "复制通用指令",
   "guide.manualReview": "人工审查相关文档",
-  "guide.universalInstruction": "请在本项目中处理特性 {feature}。下一步：{action}。先确认当前工作特性，读取该特性的文档和项目准则。使用当前工具支持的命令或技能语法，执行已安装的 Spec Kit 工作流：{command}。如果该工作流不可用，请先说明缺少什么，不要假定已经执行。"
+  "guide.universalInstruction": "请在本项目中处理特性 {feature}。下一步：{action}。先确认当前工作特性，读取该特性的文档和项目准则。使用当前工具支持的命令或技能语法，执行已安装的 Spec Kit 工作流：{command}。如果该工作流不可用，请先说明缺少什么，不要假定已经执行。",
+  "guide.instructions": "执行说明与判断依据",
+  "guide.destination": "在 AI 编程工具中使用，不是终端命令。"
 }

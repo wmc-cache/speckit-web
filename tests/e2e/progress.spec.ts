@@ -24,7 +24,8 @@ test('feature page: groups, checklists, analyze stage and clarification jump', a
   const view = page.getByTestId('feature-view');
   await expect(view.locator('[data-stage=analyze]')).toHaveAttribute('data-state', 'optional_unknown');
   await expect(view.locator('[data-stage=analyze]')).toContainText('可选·无法自动判断');
-  await expect(view.locator('[data-stage=clarify]')).toHaveAttribute('data-state', 'skipped');
+  await expect(view.locator('[data-stage=clarify]')).toHaveAttribute('data-state', 'needs_attention');
+  await expect(view.locator('[data-stage=clarify]')).toContainText('待澄清 2 处');
   await expect(view.locator('[data-checklist=requirements]')).toContainText('已全部通过');
   await view.getByText('按用户故事').click();
   await expect(view.getByTestId('feature-tasks')).toContainText('US1');

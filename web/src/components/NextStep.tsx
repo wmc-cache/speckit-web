@@ -27,34 +27,39 @@ export function NextStep({ feature, project }: { feature: FeatureSummary; projec
   return (
     <section className="next-step" data-testid="next-step">
       <div className="next-heading">
-        <span className="next-icon" aria-hidden>
-          ↗
-        </span>
-        <div>
-          <span className="eyebrow">{t('guide.next')}</span>
-          <h2>{t(`guide.${step}.title` as MessageKey)}</h2>
-          <p>{t(`guide.${step}.reason` as MessageKey)}</p>
-        </div>
+        <span className="next-label">{t('guide.next')}</span>
+        <h2>{t(`guide.${step}.title` as MessageKey)}</h2>
+        <p>{t(`guide.${step}.reason` as MessageKey)}</p>
       </div>
-      {command && (
-        <div className="command-copy">
-          <code>{command}</code>
-          <button type="button" className="button primary" onClick={() => void copy(command)}>
-            {t(copied === command ? 'guide.copied' : 'guide.copy')}
-          </button>
-        </div>
-      )}
+      <div className="next-actions">
+        {command && (
+          <div className="command-copy">
+            <code>{command}</code>
+            <button type="button" className="button primary" onClick={() => void copy(command)}>
+              {t(copied === command ? 'guide.copied' : 'guide.copy')}
+            </button>
+          </div>
+        )}
+        <button type="button" className="button instruction-copy" onClick={() => void copy(instruction)}>
+          {t(copied === instruction ? 'guide.copied' : 'guide.copyInstruction')}
+        </button>
+      </div>
+      <p className="guide-destination">{t('guide.destination')}</p>
+      <span className="sr-only" role="status">
+        {copied ? t('guide.copied') : ''}
+      </span>
       {failed && <p role="alert">{t('guide.copyFailed')}</p>}
-      <p className="guide-context">{t('guide.where')}</p>
-      <button type="button" className="button" onClick={() => void copy(instruction)}>
-        {t(copied === instruction ? 'guide.copied' : 'guide.copyInstruction')}
-      </button>
       {project.currentFeatureId !== feature.id && (
         <p className="guide-warning">
           {t('guide.context', { id: feature.id, current: project.currentFeatureId ?? t('guide.unknown') })}
         </p>
       )}
-      {step === 'plan' && <p className="guide-footnote">{t('guide.optionalClarify')}</p>}
+      <details className="guide-details">
+        <summary>{t('guide.instructions')}</summary>
+        <p className="guide-context">{t('guide.where')}</p>
+        {step === 'plan' && <p className="guide-footnote">{t('guide.optionalClarify')}</p>}
+        <p className="guide-footnote">{t('guide.evidence')}</p>
+      </details>
       {step === 'analyze' && (
         <div className="guide-alternative">
           <span>{t('guide.analyzed')}</span>
@@ -77,7 +82,6 @@ export function NextStep({ feature, project }: { feature: FeatureSummary; projec
             ))}
         </ul>
       )}
-      <p className="guide-footnote">{t('guide.evidence')}</p>
     </section>
   );
 }

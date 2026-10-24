@@ -58,17 +58,17 @@ export function FeatureView({
   const tasksDoc = feature.tasks?.docId;
 
   return (
-    <section data-testid="feature-view">
-      <p className="doc-header">
-        <span className="badge">{feature.id}</span>
-      </p>
-      <h1 className="page-title">{feature.title}</h1>
-      <p className="page-subtitle">
-        {t('doc.updated', { time: new Date(feature.updatedAt).toLocaleString() })}
-      </p>
-
-      <div className="feature-dashboard">
-        {project?.status === 'OK' && <NextStep feature={feature} project={project} />}
+    <section className="feature-workspace" data-testid="feature-view">
+      <header className="feature-heading">
+        <div>
+          <div className="feature-title-line">
+            <h1 className="page-title">{feature.title}</h1>
+            <span className="feature-id">{feature.id}</span>
+          </div>
+          <p className="page-subtitle">
+            {t('doc.updated', { time: new Date(feature.updatedAt).toLocaleString() })}
+          </p>
+        </div>
         <div className="feature-metrics">
           <div className="metric">
             <span>{t('guide.ready')}</span>
@@ -96,16 +96,43 @@ export function FeatureView({
             <span>{t(feature.clarifications.open ? 'guide.clarify.title' : 'feature.noClarify')}</span>
           </div>
         </div>
-      </div>
+      </header>
+      {project?.status === 'OK' && <NextStep feature={feature} project={project} />}
       {feature.stage && (
-        <div className="card">
+        <div className="card workflow-card">
           <div className="section-heading">
             <h2>{t('guide.flow')}</h2>
             <span>{t('guide.flowNote')}</span>
           </div>
-          <StageBar stage={feature.stage} />
+          <StageBar stage={feature.stage} openClarifications={feature.clarifications.open} />
         </div>
       )}
+
+      <div className="card documents-card">
+        <h2>{t('feature.documents')}</h2>
+        <ul className="artifact-list artifact-cards">
+          {feature.artifacts.map((slot) =>
+            slot.status === 'missing' ? (
+              <li key={slot.kind} className="artifact-tile missing">
+                {t(`artifact.${slot.kind}` as MessageKey)}{' '}
+                <span className="badge">{t('artifact.missing')}</span>
+              </li>
+            ) : (
+              slot.docs.map((d) => (
+                <li key={d.id} className="artifact-tile present">
+                  <a href={docHref(d.id)}>{t(`artifact.${slot.kind}` as MessageKey)}</a>{' '}
+                  <span className="doc-path">{d.path}</span>
+                </li>
+              ))
+            ),
+          )}
+          {feature.extraDocs.map((d) => (
+            <li key={d.id}>
+              <a href={docHref(d.id)}>{d.title}</a> <span className="doc-path">{d.path}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {(feature.tasks || feature.clarifications.open > 0) && (
         <div className="grid-2">
@@ -195,32 +222,6 @@ export function FeatureView({
           )}
         </div>
       )}
-
-      <div className="card">
-        <h2>{t('feature.documents')}</h2>
-        <ul className="artifact-list artifact-cards">
-          {feature.artifacts.map((slot) =>
-            slot.status === 'missing' ? (
-              <li key={slot.kind} className="artifact-tile missing">
-                {t(`artifact.${slot.kind}` as MessageKey)}{' '}
-                <span className="badge">{t('artifact.missing')}</span>
-              </li>
-            ) : (
-              slot.docs.map((d) => (
-                <li key={d.id} className="artifact-tile present">
-                  <a href={docHref(d.id)}>{t(`artifact.${slot.kind}` as MessageKey)}</a>{' '}
-                  <span className="doc-path">{d.path}</span>
-                </li>
-              ))
-            ),
-          )}
-          {feature.extraDocs.map((d) => (
-            <li key={d.id}>
-              <a href={docHref(d.id)}>{d.title}</a> <span className="doc-path">{d.path}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
 
       {spec && (
         <div className="grid-2">
